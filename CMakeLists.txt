@@ -30,3 +30,13 @@ target_include_directories(unit-test PRIVATE include)
 
 target_link_libraries(unit-test -lusb-1.0)
 
+add_executable(demo-1
+  src/demos/demo-1.cpp
+  src/sound-map.c
+)
+
+target_include_directories(demo-1 PRIVATE src)
+target_include_directories(demo-1 PRIVATE include)
+
+target_link_libraries(demo-1 -lusb-1.0)
+
