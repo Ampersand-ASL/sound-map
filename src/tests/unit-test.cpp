@@ -2,7 +2,6 @@
 #include "sound-map.h"
 
 using namespace std;
-using namespace kc1fsz;
 
 int main(int, const char**) {
 

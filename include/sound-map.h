@@ -17,7 +17,9 @@
  */
 #pragma once
 
-namespace kc1fsz {
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int soundMap(
     const char* busId, const char* portId, const char* vendorId, const char* productId, 
@@ -25,4 +27,7 @@ int soundMap(
     char* alsaDevice, unsigned alsaDeviceLen,
     char* ossDevice, unsigned ossDeviceLen);
 
+#ifdef __cplusplus
 }
+#endif
+
