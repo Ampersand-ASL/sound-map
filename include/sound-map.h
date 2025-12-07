@@ -21,11 +21,48 @@
 extern "C" {
 #endif
 
+/**
+ * Looks for the first USB sound device that matches the parameters provided and 
+ * returns the HID, ALSA, and OSS device names that correspond. Use caution
+ * since these devices have a way of changing order during reboots or reconfigurations
+ * so be specific as possible. Specification of physical bus/port number is ideal.
+ * 
+ * @param matchBusId The physical USB bus ID (a number) or null if any bus 
+ * is acceptable.
+ * @param matchPortId The physical USB port ID (a number) of null if any 
+ * port is acceptable.
+ * @param matchVendorId The vendor ID of the USB device (a 4 character hex
+ * code) or null if any vendor is acceptable.
+ * @param matchProductId The product ID of the USB device (a 4 character hex
+ * code) or null if any product is acceptable.
+ * @param hidDevice If not null, gets a string of the format "/dev/hidrawX"
+ * where X is and integer.
+ * @param alsaDevice If not null, gets a string of the format "X,0" where X
+ * is the card number.
+ * @param ossDevice If not null, gets a string of the format /dev/dsp or 
+ * /dev/dspX where X is the device number >= 1.
+ * @returns 0 on success, -10 if no matching device is found.
+ */
 int soundMap(
-    const char* busId, const char* portId, const char* vendorId, const char* productId, 
+    const char* matchBusId, const char* matchPortId, 
+    const char* matchVendorId, const char* matchProductId, 
     char* hidDevice, unsigned hidDeviceLen,
     char* alsaDevice, unsigned alsaDeviceLen,
     char* ossDevice, unsigned ossDeviceLen);
+
+/**
+ * Parses a simple query string and calls soundMap().
+ *  
+ * @param query Is of the format: "bus=aaa,port=bbb,vendor=ccc,product=ddd"
+ * @returns 0 on success, -10 if no matching device is found, -20 if there 
+ * is a format error in the query.
+ */
+int querySoundMap(
+    const char* query,
+    char* hidDevice, unsigned hidDeviceLen,
+    char* alsaDevice, unsigned alsaDeviceLen,
+    char* ossDevice, unsigned ossDeviceLen);
+
 
 #ifdef __cplusplus
 }
