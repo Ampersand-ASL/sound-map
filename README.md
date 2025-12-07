@@ -72,6 +72,18 @@ my Raspberry Pi 5. The output looks like this:
          ALSA  : 1,0
          OSS   : /dev/dsp1
 
+Then I unplugged the USB sound device, plugged another one into the top right 
+USB jack and plugged the original device back into the original (bottom right)
+jack. When running again the output looks like this:
+
+        Found the device:
+         HID   : /dev/hidraw1
+         ALSA  : 3,0
+         OSS   : /dev/dsp3
+
+It's the same device in the same port, but it gets assigned new Linux device 
+identifiers when the USB drivers re-enumerate the hardware. That's the problem being solved.
+
 For modern applications you probably don't care about the OSS device name, just disregard it.
 
 Physical Port Reference
