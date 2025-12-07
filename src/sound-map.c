@@ -179,6 +179,7 @@ int querySoundMap(
     char productId[32];
     productId[0] = 0;
 
+    // A name/value pair parser. Format is n:v,n:v, ...
     char mode = 'n';
     const unsigned nameCap = 32;
     char name[nameCap];
@@ -200,7 +201,7 @@ int querySoundMap(
                 strcpy(vendorId, value);
             else 
                 return -20;
-            // Get ready for next term
+            // Get ready for the next pair
             mode = 'n';
             nPtr = 0;
             name[0] = 0;
