@@ -17,7 +17,7 @@ written to be used in the Ampersand ASL server, but it is provided as an
 independent module for possible use in other places. It might be interesting to try to 
 plug it into app_rpt as well.
 
-The querySoundMap() function takes a query string that look like this:
+The querySoundMap() function takes a query string that look like any of the following:
 
     vendor:0d8c
     vendor:0d8c,product:0001
@@ -28,6 +28,11 @@ The first two cases look for devices identified by vendor codes. If only one dev
 with that code is attached to the system then everything is fine. If more than one
 is connected (for example, two USB sound interfaces with the same CM108 chip inside)
 then you will need to use a more specific query that identifies the physical port.
+
+A full application would allow the user to configure their system using a query
+string like the ones shown above (for example, in an .INI file or on a configuration 
+screen) and would then call the querySoundMap() function at startup to get the actual 
+Linux device names that it should use internally at run time.
 
 Example Program
 ===============
@@ -61,7 +66,7 @@ int main(int, const char**) {
 
 The output looks like this:
 
-        Found
+        Found the device:
          HID   : /dev/hidraw0
          ALSA  : 1,0
          OSS   : /dev/dsp1
