@@ -64,7 +64,8 @@ int main(int, const char**) {
 }
 ```
 
-The output looks like this:
+I ran this with my USB sound device plugged into the bottom right USB jack on
+my Raspberry Pi 5. The output looks like this:
 
         Found the device:
          HID   : /dev/hidraw0
