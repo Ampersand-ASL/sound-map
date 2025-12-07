@@ -53,7 +53,7 @@ int soundMap(
 /**
  * Parses a simple query string and calls soundMap().
  *  
- * @param query Is of the format: "bus=aaa,port=bbb,vendor=ccc,product=ddd"
+ * @param query Is of the format: "bus:aaa,port:bbb,vendor:ccc,product:ddd"
  * @returns 0 on success, -10 if no matching device is found, -20 if there 
  * is a format error in the query.
  */
