@@ -108,8 +108,11 @@ int soundMap(
             if (ossDeviceLen > 0) {
                 ossDevice[0] = 0;
                 // At the moment we are assuming that the ALSA-OSS emulation layer
-                // is numbering the OSS DSP devices in the same order as the ALAS
+                // is numbering the OSS DSP devices in the same order as the ALSA
                 // cards on the machine.
+                //
+                // This can be changed so this function should might need to be 
+                // improved if this case is common.
                 if (alsaCardFound != -1) {
                     if (alsaCardFound == 0) {
                         snprintf(ossDevice, ossDeviceLen, "/dev/dsp");
