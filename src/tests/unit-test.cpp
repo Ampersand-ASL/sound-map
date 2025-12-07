@@ -3,6 +3,9 @@
 
 using namespace std;
 
+/*
+This example looks on bus 3, port 2
+*/
 int test_1() {
 
     char hidDev[32];
@@ -14,6 +17,7 @@ int test_1() {
         return -1;
     }
 
+    cout << "Found" << endl;
     cout << "HID   : " << hidDev << endl;
     cout << "ALSA  : " << alsaDev << endl;
     cout << "OSS   : " << ossDev << endl;
@@ -21,6 +25,9 @@ int test_1() {
     return 0;
 }
 
+/*
+This example looks on bus 3, port 2
+*/
 int test_2() {
     
     char hidDev[32];
@@ -32,6 +39,7 @@ int test_2() {
         return -1;
     }
 
+    cout << "Found" << endl;
     cout << "HID   : " << hidDev << endl;
     cout << "ALSA  : " << alsaDev << endl;
     cout << "OSS   : " << ossDev << endl;
@@ -39,6 +47,9 @@ int test_2() {
     return 0;
 }
 
+/*
+This example does a query on bus 3 for vendor code 0d8c.
+*/
 int test_3() {
     
     char hidDev[32];
@@ -50,6 +61,7 @@ int test_3() {
         return -1;
     }
 
+    cout << "Found" << endl;
     cout << "HID   : " << hidDev << endl;
     cout << "ALSA  : " << alsaDev << endl;
     cout << "OSS   : " << ossDev << endl;
@@ -62,5 +74,4 @@ int main(int, const char**) {
     test_2();
     test_3();
 }
-
 
