@@ -4,7 +4,7 @@ to ALSA card numbers, OSS device numbers, and HID
 device numbers. Sometimes a system reboot, the addition or a new device, or just random 
 chance can cause the devices to be re-numbered. This can cause an application
 to malfunction if it is configured to use a sound device that suddenly 
-changes its number.  There's [a good discussion of this problem here]https://github.com/AllStarLink/app_rpt/issues/815) in the form of a Github issue.
+changes its number.  There's [a good discussion of this problem here](https://github.com/AllStarLink/app_rpt/issues/815) in the form of a Github issue.
 
 This library provides a way to increase reliability by allowing a user
 to specify a USB sound device **using a physical USB bus number, a physical
