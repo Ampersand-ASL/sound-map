@@ -4,7 +4,7 @@ to ALSA card numbers, OSS device numbers, and HID
 device numbers. Sometimes a system reboot, the addition or a new device, or just random 
 chance can cause the devices to be re-numbered. This can cause an application
 to malfunction if it is configured to use a sound device that suddenly 
-changes its number.
+changes its number.  There's [a good discussion of this problem here]https://github.com/AllStarLink/app_rpt/issues/815) in the form of a Github issue.
 
 This library provides a way to increase reliability by allowing a user
 to specify a USB sound device **using a physical USB bus number, a physical
@@ -20,6 +20,7 @@ plug it into app_rpt as well.
 The querySoundMap() function takes a query string that look like any of the following:
 
     vendor:0d8c
+    vendorname:"C-Media  Electronics, Inc."
     vendor:0d8c,product:0001
     bus:3,vendor:0d8c
     bus:3,port:2
@@ -34,8 +35,8 @@ string like the ones shown above (for example, in an .INI file or on a configura
 screen) and would then call the querySoundMap() function at startup to get the actual 
 Linux device names that it should use internally at run time.
 
-Example Program
-===============
+Example Program 1
+=================
 
 ```c++
 #include <iostream>
@@ -85,6 +86,50 @@ It's the same device in the same port, but it gets assigned new Linux device
 identifiers when the USB drivers re-enumerate the hardware. That's the problem being solved.
 
 For modern applications you probably don't care about the OSS device name, just disregard it.
+
+Example Program 2
+=================
+
+This example demonstrates searching by the human-readiable vendor name. This would probably
+be the logical "default" query to use for an application that used a single interface based
+on the CM1xx chip since it would just find the device on the bus without any other input.
+
+```c++
+#include <iostream>
+#include "sound-map.h"
+
+using namespace std;
+
+int main(int, const char**) {
+    
+    const char* targetVendorName = "C-Media Electronics, Inc.";
+    char query[64];
+    snprintf(query, 64, "vendorname:\"%s\"", targetVendorName);
+
+    char hidDev[32];
+    char alsaDev[32];
+    char ossDev[32];
+
+    int rc = querySoundMap(query, hidDev, 32, alsaDev, 32, ossDev, 32);
+    if (rc < 0) {
+        cout << "ERROR: " << rc << endl;
+        return -1;
+    }
+
+    cout << "Found the device:" << endl;
+    cout << " HID   : " << hidDev << endl;
+    cout << " ALSA  : " << alsaDev << endl;
+    cout << " OSS   : " << ossDev << endl;
+
+    return 0;
+}
+```
+I ran this with my [Allscan URI101 USB sound device](https://allscan.info/products/) plugged into the bottom right USB jack on my Raspberry Pi 5. The output looks like this:
+
+    Found the device:
+     HID   : /dev/hidraw1
+     ALSA  : 3,0
+     OSS   : /dev/dsp3
 
 Physical Port Reference
 =======================

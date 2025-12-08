@@ -20,6 +20,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+#include <ctype.h>
 
 #include <libusb-1.0/libusb.h>
 
@@ -28,11 +29,71 @@
 static const unsigned MAX_ALSA = 16;
 static const unsigned MAX_HID = 16;
 
+// The location of the database that maps USB vendor IDs to human readable
+// names. This file may be located in different places so an #ifndef or
+// some other control may be needed.
+//
+// This location works on recent Raspberry Pi builds:
+static const char* USBID_DB = "/var/lib/usbutils/usb.ids";
+
+int resolveVendorName(const char* targetName, char* vendorId, unsigned vendorIdLen) {
+    if (vendorIdLen < 5)
+        return -2;
+    FILE* f0 = fopen(USBID_DB, "r");
+    if (f0 == 0)
+        return -1;
+    int found = 0;
+    char line[128];
+    while (fgets(line, 127, f0) && !found) {
+
+        // Line format is:
+        // xxxx  name
+        //
+        // where xxxx is the hex vendorId and there are two spaces between tokens
+        if (isxdigit(line[0]) && line[4] == ' ' && line[5] == ' ') {
+            // Copy the second token of the line into a string for
+            // comparison purposes.
+            char vendorName[64];
+            unsigned j = 0;
+            for (unsigned i = 6; i < strlen(line); i++) {
+                // Look for the end of the line
+                if (line[i] == '\n' || line[i] == '\r') {
+                    vendorName[j++] = 0;
+                    if (strcasecmp(targetName, vendorName) == 0) {
+                        vendorId[0] = line[0];
+                        vendorId[1] = line[1];
+                        vendorId[2] = line[2];
+                        vendorId[3] = line[3];
+                        vendorId[4] = 0;
+                        found = 1;
+                    }
+                }
+                else {
+                    vendorName[j++] = line[i];
+                }
+            }
+        
+        }
+    }
+    fclose(f0);
+    if (found)
+        return 0;
+    else 
+        return -10;
+}
+
 int soundMap(
     const char* busId, const char* portId, const char* vendorId, const char* productId, 
     char* hidDevice, unsigned hidDeviceLen,
     char* alsaDevice, unsigned alsaDeviceLen,
     char* ossDevice, unsigned ossDeviceLen) {
+
+    // Check for the case where nothing is specified
+    if ((busId == 0 || busId[0] == 0) &&
+        (portId == 0 || portId[0] == 0) &&
+        (vendorId == 0 || vendorId[0] == 0) &&
+        (productId == 0 || productId[0] == 0))
+        return -10;
 
     libusb_context *ctx = 0;
     if (libusb_init(&ctx) < 0) {
@@ -181,9 +242,12 @@ int querySoundMap(
     vendorId[0] = 0;
     char productId[32];
     productId[0] = 0;
+    char vendorName[64];
+    vendorName[0] = 0;
 
     // A name/value pair parser. Format is n:v,n:v, ...
     char mode = 'n';
+    int inQuote = 0;
     const unsigned nameCap = 32;
     char name[nameCap];
     name[0] = 0;
@@ -193,44 +257,71 @@ int querySoundMap(
     unsigned nPtr = 0;
     unsigned vPtr = 0;
     for (unsigned i = 0; i <= strlen(query); i++) {
-        if (query[i] == ',' || query[i] == 0) {
-            if (strcmp(name, "bus") == 0) 
-                strcpy(busId, value);
-            else if (strcmp(name, "port") == 0) 
-                strcpy(portId, value);
-            else if (strcmp(name, "vendor") == 0) 
-                strcpy(vendorId, value);
-            else if (strcmp(name, "product") == 0) 
-                strcpy(vendorId, value);
-            else 
-                return -20;
-            // Get ready for the next pair
-            mode = 'n';
-            nPtr = 0;
-            name[0] = 0;
-            vPtr = 0;
-            value[0] = 0;
+        if (inQuote) {
+            // Not allowed to end the query in a quote
+            if (query[0] == 0) {
+                return -15;
+            } 
+            // Look for the end of the quote. This is the only way to get out.
+            else if (query[i] == '"') {
+                inQuote = 0;
+            }
+            // Still quoted
+            else {
+                value[vPtr++] = query[i];
+                value[vPtr] = 0;
+            }
         }
-        else if (query[i] == ' ') {
-            // Ignore
-        }
-        else if (query[i] == ':') {
-            // Switch modes
-            mode = 'v';
-        } 
         else {
-            if (mode == 'n') {
-                if (nPtr < nameCap - 1) {
-                    name[nPtr++] = query[i];
-                    name[nPtr] = 0;
-                }
-            } else if (mode == 'v') {
-                if (vPtr < valueCap - 1) {
-                    value[vPtr++] = query[i];
-                    value[vPtr] = 0;
-                }
-            } else assert(0);
+            if (query[i] == ',' || query[i] == 0) {
+                if (strcmp(name, "bus") == 0) 
+                    strcpy(busId, value);
+                else if (strcmp(name, "port") == 0) 
+                    strcpy(portId, value);
+                else if (strcmp(name, "vendor") == 0) 
+                    strcpy(vendorId, value);
+                else if (strcmp(name, "product") == 0) 
+                    strcpy(vendorId, value);
+                else if (strcmp(name, "vendorname") == 0) 
+                    strcpy(vendorName, value);
+                else 
+                    return -20;
+                // Get ready for the next pair
+                mode = 'n';
+                nPtr = 0;
+                name[0] = 0;
+                vPtr = 0;
+                value[0] = 0;
+            }
+            else if (query[i] == ' ') {
+                // Ignore
+            }
+            else if (query[i] == ':') {
+                // Switch modes
+                mode = 'v';
+            } 
+            else {
+                if (mode == 'n') {
+                    if (nPtr < nameCap - 1) {
+                        name[nPtr++] = query[i];
+                        name[nPtr] = 0;
+                    }
+                } else if (mode == 'v') {
+                    // This is the only way to trigger a quote
+                    if (query[i] == '"') {
+                        inQuote = 1;
+                    } else if (vPtr < valueCap - 1) {
+                        value[vPtr++] = query[i];
+                        value[vPtr] = 0;
+                    }
+                } else assert(0);
+            }
         }
+    }
+
+    // If a name is specified use it to determine the vendor ID
+    if (vendorName[0] != 0) {
+        resolveVendorName(vendorName, vendorId, 32);
     }
 
     return soundMap(busId, portId, vendorId, productId, 

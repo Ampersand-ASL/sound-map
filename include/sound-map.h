@@ -53,7 +53,7 @@ int soundMap(
 /**
  * Parses a simple query string and calls soundMap().
  *  
- * @param query Is of the format: "bus:aaa,port:bbb,vendor:ccc,product:ddd"
+ * @param query Is of the format: "bus:aaa,port:bbb,vendor:ccc,product:ddd,vendorname:nnnn"
  * @returns 0 on success, -10 if no matching device is found, -20 if there 
  * is a format error in the query.
  */
@@ -63,6 +63,12 @@ int querySoundMap(
     char* alsaDevice, unsigned alsaDeviceLen,
     char* ossDevice, unsigned ossDeviceLen);
 
+/**
+ * A utility function for getting the hex vendor ID from a human-readiable
+ * vendor name.
+ * @returns 0 on success, -10 when not found.
+ */
+int resolveVendorName(const char* targetName, char* vendorId, unsigned vendorIdLen);
 
 #ifdef __cplusplus
 }

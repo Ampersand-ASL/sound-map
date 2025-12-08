@@ -5,15 +5,11 @@ using namespace std;
 
 int main(int, const char**) {
     
-    const char* targetVendorName = "C-Media Electronics, Inc.";
-    char query[64];
-    snprintf(query, 64, "vendorname:\"%s\"", targetVendorName);
-
     char hidDev[32];
     char alsaDev[32];
     char ossDev[32];
 
-    int rc = querySoundMap(query, hidDev, 32, alsaDev, 32, ossDev, 32);
+    int rc = querySoundMap("bus:3,port:2", hidDev, 32, alsaDev, 32, ossDev, 32);
     if (rc < 0) {
         cout << "ERROR: " << rc << endl;
         return -1;
