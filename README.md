@@ -30,6 +30,9 @@ from that vendor is attached to the system then everything is fine. If more than
 is connected (for example, two USB sound interfaces with the same CM108 chip inside)
 then you will need to use a more specific query that identifies the physical port.
 
+There is nothing in the API that lets you query by USB device number or ALSA card number
+since those things can change dynamically.
+
 A full application would allow the user to configure their system using a query
 string like the ones shown above (for example, in an .INI file or on a configuration 
 screen) and would then call the querySoundMap() function at startup to get the actual 
