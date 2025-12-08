@@ -25,8 +25,8 @@ The querySoundMap() function takes a query string that look like any of the foll
     bus:3,vendor:0d8c
     bus:3,port:2
 
-The first two cases look for devices identified by vendor codes. If only one device
-with that code is attached to the system then everything is fine. If more than one
+The first three cases look for devices identified by vendor codes/names. If only one device
+from that vendor is attached to the system then everything is fine. If more than one
 is connected (for example, two USB sound interfaces with the same CM108 chip inside)
 then you will need to use a more specific query that identifies the physical port.
 
@@ -90,9 +90,9 @@ For modern applications you probably don't care about the OSS device name, just 
 Example Program 2
 =================
 
-This example demonstrates searching by the human-readiable vendor name. This would probably
-be the logical "default" query to use for an application that used a single interface based
-on the CM1xx chip since it would just find the device on the bus without any other input.
+This example demonstrates searching by the human-readable vendor name. This would probably
+be the logical "default" query to use. For a system that had a single audio interface based
+on the CM1xx chip it would just find the device on the bus without any other input.
 
 ```c++
 #include <iostream>
@@ -124,7 +124,7 @@ int main(int, const char**) {
     return 0;
 }
 ```
-I ran this with my [Allscan URI101 USB sound device](https://allscan.info/products/) plugged into the bottom right USB jack on my Raspberry Pi 5. The output looks like this:
+I ran this with my [AllScan URI101 USB sound device](https://allscan.info/products/) plugged into the bottom right USB jack on my Raspberry Pi 5. The output looks like this:
 
     Found the device:
      HID   : /dev/hidraw1
