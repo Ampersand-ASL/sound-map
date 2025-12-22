@@ -64,19 +64,7 @@ int querySoundMap(
     char* ossDevice, unsigned ossDeviceLen);
 
 /**
- * A callback used for directory entry visitation.
- */
-typedef void (*directoryVisitor)(const char* vendorId, const char* vendorName, 
-    const char* productId, const char* productName, void*);
-
-/**
- * Visits all entries in the USB directory.
- * Data credit: http://www.linux-usb.org/usb.ids
- */
-void visitVendorProductDirectory(directoryVisitor cb, void* userData);    
-
-/**
- * A utility function for getting the hex vendor ID from a human-readiable
+ * A utility function for getting the hex vendor ID from a human-readable
  * vendor name.
  * 
  * @returns 0 on success, -10 when not found.
@@ -88,7 +76,7 @@ int resolveVendorName(const char* targetName, char* vendorId, unsigned vendorIdL
  * 
  * @param vendorName Will be filled with a null-terminated name, as much as
  *   will fit.
- * @param prodcutName Will be filled with a null-terminated name, as much as
+ * @param productName Will be filled with a null-terminated name, as much as
  *   will fit.
  */
 void getVendorAndProductName(const char* targetVendorId, const char* targetProductId, 

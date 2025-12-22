@@ -30,45 +30,12 @@
 static const unsigned MAX_ALSA = 16;
 static const unsigned MAX_HID = 16;
 
-extern unsigned UsbDirLen;
-extern struct NameDirectoryEntry UsbDir[];
-
 // The location of the database that maps USB vendor IDs to human readable
 // names. This file may be located in different places so an #ifndef or
 // some other control may be needed.
 //
 // This location works on recent Raspberry Pi builds:
 static const char* USBID_DB = "/var/lib/usbutils/usb.ids";
-
-/**
- * Visits all entries in the USB directory.
- * Data credit: http://www.linux-usb.org/usb.ids
- */
-void visitVendorProductDirectory(directoryVisitor cb, void* userData) {
-    unsigned vendorIx = 0;
-    char vendorId[5], productId[5], vendorName[49], productName[49];
-    for (unsigned i = 0; i < UsbDirLen; i++) {
-        if (UsbDir[i].level == 0) {
-            vendorIx = i;
-            snprintf(vendorId, 4, UsbDir[i].id);
-            vendorId[4] = 0;
-            snprintf(vendorName, 48, UsbDir[i].name);
-            vendorId[48] = 0;
-        } else {
-            snprintf(productId, 4, UsbDir[i].id);
-            productId[4] = 0;
-            snprintf(productName, 48, UsbDir[i].name);
-            productId[48] = 0;
-            cb(vendorId, vendorName, productId, productName, userData);
-        }
-    }
-}
-
-void getVendorAndProductName(const char* targetVendorId, const char* targetProductId, 
-    char* vendorName, unsigned vendorNameLen, char* productName, unsigned productNameLen) {
-    
-
-}
 
 int resolveVendorName(const char* targetName, char* vendorId, unsigned vendorIdLen) {
     if (vendorIdLen < 5)

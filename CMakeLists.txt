@@ -18,7 +18,7 @@ project(sound-map C CXX ASM)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 23)
 
-add_compile_options(-fstack-protector-all -Wall -Wpedantic -ggdb -rdynamic -O0)
+add_compile_options(-fstack-protector-all -Wall -Wpedantic -ggdb -O0)
 
 add_executable(unit-test
   src/tests/unit-test.cpp
@@ -42,12 +42,12 @@ target_link_libraries(demo-1 -lusb-1.0)
 
 add_executable(demo-3
   src/demos/demo-3.cpp
-  src/sound-map.c
+  src/sound-map-2.cpp
   src/usb-dir.c
 )
 
 target_include_directories(demo-3 PRIVATE src)
 target_include_directories(demo-3 PRIVATE include)
 
-target_link_libraries(demo-3 -lusb-1.0)
+target_link_libraries(demo-3)
 
