@@ -82,6 +82,51 @@ int resolveVendorName(const char* targetName, char* vendorId, unsigned vendorIdL
         return -10;
 }
 
+int visitUSBDevices(deviceVisitor cb, void* userData) {
+
+    libusb_context *ctx = 0;
+    if (libusb_init(&ctx) < 0) {
+        return -1;
+    }
+
+    libusb_device** devList;
+    ssize_t count = libusb_get_device_list(ctx, &devList);
+    if (count < 0) {
+        libusb_exit(ctx);
+        return -2;
+    }
+
+    // Iterate across all of the USB devices on the machine.
+
+    for (ssize_t i = 0; i < count; i++) {
+
+        libusb_device *dev = devList[i];
+        struct libusb_device_descriptor desc;
+
+        if (libusb_get_device_descriptor(dev, &desc) != 0) 
+            continue;
+            
+        char vendorId2[16];
+        snprintf(vendorId2, 16, "%04x", desc.idVendor);
+        char productId2[16];
+        snprintf(productId2, 16, "%04x", desc.idProduct);
+
+        if (cb) {
+            cb(vendorId2, productId2, 
+                libusb_get_bus_number(dev), libusb_get_port_number(dev), userData);
+        }
+
+    }
+  
+    // The "1" causes an unref
+    libusb_free_device_list(devList, 1);
+
+    // 5. Deinitialize libusb
+    libusb_exit(ctx);
+
+    return 0;
+}
+
 int soundMap(
     const char* busId, const char* portId, const char* vendorId, const char* productId, 
     char* hidDevice, unsigned hidDeviceLen,

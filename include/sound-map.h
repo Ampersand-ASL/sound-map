@@ -66,9 +66,31 @@ int querySoundMap(
 /**
  * A utility function for getting the hex vendor ID from a human-readiable
  * vendor name.
+ * 
  * @returns 0 on success, -10 when not found.
  */
 int resolveVendorName(const char* targetName, char* vendorId, unsigned vendorIdLen);
+
+typedef void (*deviceVisitor)(const char* vendorId, const char* productId, 
+    unsigned busId, unsigned portId, void* userData);
+
+/**
+ * Iterates across all USB devices and calls the callback for each one.
+ * @param userData Will be passed back in the callback function.
+ */
+int visitUSBDevices(deviceVisitor cb, void* userData);
+
+typedef void (*deviceVisitor2)(const char* vendorName, const char* productName, 
+    const char* busId, const char* portId);
+
+/**
+ * Iterates across all USB devices and calls the callback for each one.
+ * @param userData Will be passed back in the callback function.
+ */
+int visitUSBDevices2(deviceVisitor2 cb, void* userData);
+
+
+
 
 #ifdef __cplusplus
 }
