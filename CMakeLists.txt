@@ -43,6 +43,7 @@ target_link_libraries(demo-1 -lusb-1.0)
 add_executable(demo-3
   src/demos/demo-3.cpp
   src/sound-map.c
+  src/usb-dir.c
 )
 
 target_include_directories(demo-3 PRIVATE src)
