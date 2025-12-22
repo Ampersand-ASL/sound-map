@@ -21,10 +21,10 @@
 //
 // TODO: At some point we will create a script that can pull the entire list.
 
-unsigned UsbDirLen = 25;
+unsigned UsbDirLen = 30;
 
 struct NameDirectoryEntry UsbDir[] = {
-    { .level=0, .id="0d8c", .name="C-Media Electronics, Inc.", .childCount=24 },
+    { .level=0, .id="0d8c", .name="C-Media Electronics, Inc.", .childCount=25 },
         { .level=1, .id="0001", .name="Audio Device", .childCount=0 },
         { .level=1, .id="0002", .name="Composite Device", .childCount=0 },
         { .level=1, .id="0003", .name="Sound Device", .childCount=0 },
@@ -34,6 +34,7 @@ struct NameDirectoryEntry UsbDir[] = {
         { .level=1, .id="000c", .name="Audio Adapter", .childCount=0 },
         { .level=1, .id="000d", .name="Composite Device", .childCount=0 },
         { .level=1, .id="000e", .name="Audio Adapter (Planet UP-100, Genius G-Talk)", .childCount=0 },
+        { .level=1, .id="0012", .name="USB Audio Device", .childCount=0 },
         { .level=1, .id="0014", .name="Audio Adapter (Unitek Y-247A)", .childCount=0 },
         { .level=1, .id="001f", .name="CM108 Audio Controller", .childCount=0 },
         { .level=1, .id="0102", .name="CM106 Like Sound Device", .childCount=0 },
@@ -49,4 +50,8 @@ struct NameDirectoryEntry UsbDir[] = {
         { .level=1, .id="5000", .name="Mass Storage Controller", .childCount=0 },
         { .level=1, .id="5200", .name="Mass Storage Controller(0D8C,5200)", .childCount=0 },
         { .level=1, .id="b213", .name="USB Phone CM109 (aka CT2000,VPT1000)", .childCount=0 },
+    { .level=0, .id="1d6b", .name="Linux Foundation", .childCount=3 },
+        { .level=1, .id="0001", .name="1.1 root hub", .childCount=0 },
+        { .level=1, .id="0002", .name="2.0 root hub", .childCount=0 },
+        { .level=1, .id="0003", .name="2.0 root hub", .childCount=0 },
 };

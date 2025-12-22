@@ -30,59 +30,6 @@
 static const unsigned MAX_ALSA = 16;
 static const unsigned MAX_HID = 16;
 
-// The location of the database that maps USB vendor IDs to human readable
-// names. This file may be located in different places so an #ifndef or
-// some other control may be needed.
-//
-// This location works on recent Raspberry Pi builds:
-static const char* USBID_DB = "/var/lib/usbutils/usb.ids";
-
-int resolveVendorName(const char* targetName, char* vendorId, unsigned vendorIdLen) {
-    if (vendorIdLen < 5)
-        return -2;
-    FILE* f0 = fopen(USBID_DB, "r");
-    if (f0 == 0)
-        return -1;
-    int found = 0;
-    char line[128];
-    while (fgets(line, 127, f0) && !found) {
-
-        // Line format is:
-        // xxxx  name
-        //
-        // where xxxx is the hex vendorId and there are two spaces between tokens
-        if (isxdigit(line[0]) && line[4] == ' ' && line[5] == ' ') {
-            // Copy the second token of the line into a string for
-            // comparison purposes.
-            char vendorName[64];
-            unsigned j = 0;
-            for (unsigned i = 6; i < strlen(line); i++) {
-                // Look for the end of the line
-                if (line[i] == '\n' || line[i] == '\r') {
-                    vendorName[j++] = 0;
-                    if (strcasecmp(targetName, vendorName) == 0) {
-                        vendorId[0] = line[0];
-                        vendorId[1] = line[1];
-                        vendorId[2] = line[2];
-                        vendorId[3] = line[3];
-                        vendorId[4] = 0;
-                        found = 1;
-                    }
-                }
-                else {
-                    vendorName[j++] = line[i];
-                }
-            }
-        
-        }
-    }
-    fclose(f0);
-    if (found)
-        return 0;
-    else 
-        return -10;
-}
-
 int visitUSBDevices(deviceVisitor cb, void* userData) {
 
     libusb_context *ctx = 0;

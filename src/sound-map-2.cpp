@@ -58,22 +58,27 @@ int resolveVendorName(const char* targetName, char* vId, unsigned vIdLen) {
         return -10;
 }
 
-void getVendorAndProductName(
+int getVendorAndProductName(
     const char* targetVId, const char* targetPId, 
     char* vendorName, unsigned vendorNameLen, 
     char* productName, unsigned productNameLen) {
-
+    bool hit = false;
     visitVendorProductDirectory([&](
         const char* vId, const char* vName, 
         const char* pId, const char* pName) {
         if (strcasecmp(targetVId, vId) == 0 && strcasecmp(targetPId, pId) == 0) {
             snprintf(vendorName, vendorNameLen, "%s", vName);
             snprintf(productName, productNameLen, "%s", pName);
+            hit = true;
             return false;
         } else {
             return true;
         }
     });    
+    if (hit)
+        return 0;
+    else 
+        return -1;
 }
 
 }

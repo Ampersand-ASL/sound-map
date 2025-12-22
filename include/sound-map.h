@@ -78,8 +78,9 @@ int resolveVendorName(const char* targetName, char* vendorId, unsigned vendorIdL
  *   will fit.
  * @param productName Will be filled with a null-terminated name, as much as
  *   will fit.
+ * @returns 0 if found, -1 if not found
  */
-void getVendorAndProductName(const char* targetVendorId, const char* targetProductId, 
+int getVendorAndProductName(const char* targetVendorId, const char* targetProductId, 
     char* vendorName, unsigned vendorNameLen, char* productName, unsigned productNameLen);
 
 typedef void (*deviceVisitor)(const char* vendorId, const char* productId, 
