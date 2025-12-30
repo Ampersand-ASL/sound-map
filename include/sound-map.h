@@ -90,7 +90,7 @@ typedef void (*deviceVisitor)(const char* vendorId, const char* productId,
  * Iterates across all USB devices and calls the callback for each one.
  * @param userData Will be passed back in the callback function.
  */
-int visitUSBDevices(deviceVisitor cb, void* userData);
+int visitUSBDevices(deviceVisitor cb, void* userData, int audioOnly);
 
 typedef void (*deviceVisitor2)(const char* vendorName, const char* productName, 
     const char* busId, const char* portId);

@@ -27,7 +27,8 @@ void visitor(const char* vId, const char* pId,
 
 int main(int, const char**) {
     
-    visitUSBDevices(visitor, 0);
+    // Visit the devices, audio only!
+    visitUSBDevices(visitor, 0, 0);
 
     char vname[16], pname[16];
     getVendorAndProductName("0d8c", "0001", vname, 16, pname, 16);

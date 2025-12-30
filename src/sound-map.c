@@ -30,7 +30,7 @@
 static const unsigned MAX_ALSA = 16;
 static const unsigned MAX_HID = 16;
 
-int visitUSBDevices(deviceVisitor cb, void* userData) {
+int visitUSBDevices(deviceVisitor cb, void* userData, int audioOnly) {
 
     libusb_context *ctx = 0;
     if (libusb_init(&ctx) < 0) {
@@ -53,6 +53,9 @@ int visitUSBDevices(deviceVisitor cb, void* userData) {
 
         if (libusb_get_device_descriptor(dev, &desc) != 0) 
             continue;
+
+        if (audioOnly && desc.bDeviceClass != LIBUSB_CLASS_AUDIO)
+            continue;
             
         char vendorId2[16];
         snprintf(vendorId2, 16, "%04x", desc.idVendor);
@@ -63,6 +66,8 @@ int visitUSBDevices(deviceVisitor cb, void* userData) {
             cb(vendorId2, productId2, 
                 libusb_get_bus_number(dev), libusb_get_port_number(dev), userData);
         }
+
+        printf("CLass %d\n", desc.bDeviceClass);
 
     }
   
