@@ -22,7 +22,7 @@ add_compile_options(-fstack-protector-all -Wall -Wpedantic -ggdb -O0)
 
 add_executable(unit-test
   src/tests/unit-test.cpp
-  src/sound-map.c
+  src/sound-map.cpp
   src/sound-map-2.cpp
   src/usb-dir.c
 )
@@ -34,7 +34,9 @@ target_link_libraries(unit-test -lusb-1.0)
 
 add_executable(demo-1
   src/demos/demo-1.cpp
-  src/sound-map.c
+  src/sound-map.cpp
+  src/sound-map-2.cpp
+  src/usb-dir.c
 )
 
 target_include_directories(demo-1 PRIVATE src)
@@ -44,7 +46,7 @@ target_link_libraries(demo-1 -lusb-1.0)
 
 add_executable(demo-2
   src/demos/demo-2.cpp
-  src/sound-map.c
+  src/sound-map.cpp
 )
 
 target_include_directories(demo-2 PRIVATE src)
@@ -55,7 +57,7 @@ target_link_libraries(demo-2 -lusb-1.0)
 add_executable(demo-3
   src/demos/demo-3.cpp
   src/sound-map-2.cpp
-  src/sound-map.c
+  src/sound-map.cpp
   src/usb-dir.c
 )
 
@@ -63,4 +65,3 @@ target_include_directories(demo-3 PRIVATE src)
 target_include_directories(demo-3 PRIVATE include)
 
 target_link_libraries(demo-3 -lusb-1.0)
-

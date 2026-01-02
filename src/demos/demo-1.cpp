@@ -2,6 +2,7 @@
 #include "sound-map.h"
 
 using namespace std;
+using namespace kc1fsz;
 
 int main(int, const char**) {
     
@@ -9,18 +10,16 @@ int main(int, const char**) {
     char query[64];
     snprintf(query, 64, "vendorname:\"%s\"", targetVendorName);
 
-    char hidDev[32];
-    char alsaDev[32];
-    char ossDev[32];
+    string alsaDev;
+    string ossDev;
 
-    int rc = querySoundMap(query, hidDev, 32, alsaDev, 32, ossDev, 32);
+    int rc = querySoundMap(query, alsaDev, ossDev);
     if (rc < 0) {
         cout << "ERROR: " << rc << endl;
         return -1;
     }
 
     cout << "Found the device:" << endl;
-    cout << " HID   : " << hidDev << endl;
     cout << " ALSA  : " << alsaDev << endl;
     cout << " OSS   : " << ossDev << endl;
 

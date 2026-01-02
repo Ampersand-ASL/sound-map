@@ -12,6 +12,10 @@
 extern unsigned UsbDirLen;
 extern struct NameDirectoryEntry UsbDir[];
 
+using namespace std;
+
+namespace kc1fsz {
+
 /**
  * Visits all entries in the USB directory.
  * Data credit: http://www.linux-usb.org/usb.ids
@@ -37,15 +41,13 @@ void visitVendorProductDirectory(
     }
 }
 
-extern "C" {
-
-int resolveVendorName(const char* targetName, char* vId, unsigned vIdLen) {
+int resolveVendorName(const char* targetName, string& vId) {
     bool hit = false;
     visitVendorProductDirectory([&](
         const char* vId2, const char* vName, 
         const char* pId2, const char* pName) {
         if (strcasecmp(targetName, vName) == 0) {
-            snprintf(vId, vIdLen, "%s", vId2);
+            vId = vId2;
             hit = true;
             return false;
         } else {
@@ -58,17 +60,15 @@ int resolveVendorName(const char* targetName, char* vId, unsigned vIdLen) {
         return -10;
 }
 
-int getVendorAndProductName(
-    const char* targetVId, const char* targetPId, 
-    char* vendorName, unsigned vendorNameLen, 
-    char* productName, unsigned productNameLen) {
+int getVendorAndProductName(const char* targetVId, const char* targetPId, 
+    string& vendorName, string& productName) {
     bool hit = false;
     visitVendorProductDirectory([&](
         const char* vId, const char* vName, 
         const char* pId, const char* pName) {
         if (strcasecmp(targetVId, vId) == 0 && strcasecmp(targetPId, pId) == 0) {
-            snprintf(vendorName, vendorNameLen, "%s", vName);
-            snprintf(productName, productNameLen, "%s", pName);
+            vendorName = vName;
+            productName = pName;
             hit = true;
             return false;
         } else {
