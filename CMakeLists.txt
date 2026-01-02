@@ -23,6 +23,8 @@ add_compile_options(-fstack-protector-all -Wall -Wpedantic -ggdb -O0)
 add_executable(unit-test
   src/tests/unit-test.cpp
   src/sound-map.c
+  src/sound-map-2.cpp
+  src/usb-dir.c
 )
 
 target_include_directories(unit-test PRIVATE src)

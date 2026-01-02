@@ -30,7 +30,7 @@
 static const unsigned MAX_ALSA = 16;
 static const unsigned MAX_HID = 16;
 
-int visitUSBDevices(deviceVisitor cb, void* userData, int audioOnly) {
+int visitUSBDevices(deviceVisitor cb, void* userData) {
 
     libusb_context *ctx = 0;
     if (libusb_init(&ctx) < 0) {
@@ -53,9 +53,6 @@ int visitUSBDevices(deviceVisitor cb, void* userData, int audioOnly) {
 
         if (libusb_get_device_descriptor(dev, &desc) != 0) 
             continue;
-
-        if (audioOnly && desc.bDeviceClass != LIBUSB_CLASS_AUDIO)
-            continue;
             
         char vendorId2[16];
         snprintf(vendorId2, 16, "%04x", desc.idVendor);
@@ -66,9 +63,6 @@ int visitUSBDevices(deviceVisitor cb, void* userData, int audioOnly) {
             cb(vendorId2, productId2, 
                 libusb_get_bus_number(dev), libusb_get_port_number(dev), userData);
         }
-
-        printf("CLass %d\n", desc.bDeviceClass);
-
     }
   
     // The "1" causes an unref
@@ -80,9 +74,49 @@ int visitUSBDevices(deviceVisitor cb, void* userData, int audioOnly) {
     return 0;
 }
 
+struct visitArgs {
+    deviceVisitor2 cb;
+    void* userData;
+};
+
+static void visitor1(const char* vendorId, const char* productId, 
+    unsigned busId, unsigned portId, void* userData) {
+    struct visitArgs* args = (struct visitArgs*)userData;
+    char vendorName[48];
+    vendorName[0] = 0;
+    char productName[48];
+    productName[0] = 0;
+
+    // Attempt to resolve the vendor ID/product ID pair into full names
+    int rc = getVendorAndProductName(vendorId, productId, 
+        vendorName, 48, productName, 48);
+    // If the lookup fails then just use the IDs
+    if (rc < 0) {
+        snprintf(vendorName, 48, "vid %s", vendorId);
+        snprintf(productName, 48, "pid %s", productId);
+    }
+
+    char busIdStr[8];
+    char portIdStr[8];
+    snprintf(busIdStr, 8, "%u", busId);
+    snprintf(portIdStr, 8, "%u", portId);
+
+    args->cb(vendorName, productName, busIdStr, portIdStr, args->userData);
+}
+
+/**
+ * Iterates across all USB devices and calls the callback for each one.
+ * @param userData Will be passed back in the callback function.
+ */
+int visitUSBDevices2(deviceVisitor2 cb, void* userData) {
+    struct visitArgs args;
+    args.cb = cb;
+    args.userData = userData;
+    return visitUSBDevices(visitor1, &args);
+}
+
 int soundMap(
     const char* busId, const char* portId, const char* vendorId, const char* productId, 
-    char* hidDevice, unsigned hidDeviceLen,
     char* alsaDevice, unsigned alsaDeviceLen,
     char* ossDevice, unsigned ossDeviceLen) {
 
@@ -180,8 +214,70 @@ int soundMap(
                     }
                 }
             }
+            
+            break;
+        }
+    }
+  
+    // The "1" causes an unref
+    libusb_free_device_list(devList, 1);
 
-            // HID search
+    // 5. Deinitialize libusb
+    libusb_exit(ctx);
+
+    if (!found) 
+        return -10;
+
+    return 0;
+}
+
+int hidMap(
+    const char* busId, const char* portId, const char* vendorId, const char* productId, 
+    char* hidDevice, unsigned hidDeviceLen) {
+
+    // Check for the case where nothing is specified
+    if ((busId == 0 || busId[0] == 0) &&
+        (portId == 0 || portId[0] == 0) &&
+        (vendorId == 0 || vendorId[0] == 0) &&
+        (productId == 0 || productId[0] == 0))
+        return -10;
+
+    libusb_context *ctx = 0;
+    if (libusb_init(&ctx) < 0) {
+        return -1;
+    }
+
+    libusb_device** devList;
+    ssize_t count = libusb_get_device_list(ctx, &devList);
+    if (count < 0) {
+        libusb_exit(ctx);
+        return -2;
+    }
+
+    // Iterate across all of the USB devices on the machine and return 
+    // the first one that satisfies the query parameters.
+
+    int found = 0;
+
+    for (ssize_t i = 0; i < count; i++) {
+
+        libusb_device *dev = devList[i];
+        struct libusb_device_descriptor desc;
+
+        if (libusb_get_device_descriptor(dev, &desc) != 0) 
+            continue;
+            
+        char vendorId2[16];
+        snprintf(vendorId2, 16, "%04x", desc.idVendor);
+        char productId2[16];
+        snprintf(productId2, 16, "%04x", desc.idProduct);
+        
+        if ((busId == 0 || busId[0] == 0 || libusb_get_bus_number(dev) == atoi(busId)) &&
+            (portId == 0 || portId[0] == 0 || libusb_get_port_number(dev) == atoi(portId)) &&
+            (vendorId == 0 || vendorId[0] == 0 || strcasecmp(vendorId, vendorId2) == 0) &&
+            (productId == 0 || productId[0] == 0 || strcasecmp(productId, productId2) == 0)) {
+
+            found = 1;
 
             if (hidDeviceLen > 0) {
                 hidDevice[0] = 0;
@@ -223,22 +319,17 @@ int soundMap(
     return 0;
 }
 
-/**
- * This function just parses the query string and calls the search function.
- */
-int querySoundMap(
-    const char* query,
-    char* hidDevice, unsigned hidDeviceLen,
-    char* alsaDevice, unsigned alsaDeviceLen,
-    char* ossDevice, unsigned ossDeviceLen) {
+// An internal function that converts a query into the parameters needed
+// by the map functions.
+static int parseQuery(const char* query, 
+    char* busId, unsigned busIdLen,
+    char* portId, unsigned portIdLen,
+    char* vendorId, unsigned vendorIdLen,
+    char* productId, unsigned productIdLen) {
 
-    char busId[32];
     busId[0] = 0;
-    char portId[32];
     portId[0] = 0;
-    char vendorId[32];
     vendorId[0] = 0;
-    char productId[32];
     productId[0] = 0;
     char vendorName[64];
     vendorName[0] = 0;
@@ -319,13 +410,71 @@ int querySoundMap(
 
     // If a name is specified use it to determine the vendor ID
     if (vendorName[0] != 0) {
-        resolveVendorName(vendorName, vendorId, 32);
+        int rc = resolveVendorName(vendorName, vendorId, 32);
+        if (rc < 0)
+            return rc;
     }
 
+    return 0;
+}
+
+/**
+ * This function just parses the query string and calls the search function.
+ */
+int querySoundMap(
+    const char* query,
+    char* alsaDevice, unsigned alsaDeviceLen,
+    char* ossDevice, unsigned ossDeviceLen) {
+
+    char busId[32];
+    busId[0] = 0;
+    char portId[32];
+    portId[0] = 0;
+    char vendorId[32];
+    vendorId[0] = 0;
+    char productId[32];
+    productId[0] = 0;
+
+    int rc = parseQuery(query, 
+        busId, 32,
+        portId, 32,
+        vendorId, 32,
+        productId, 32);
+    if (rc < 0)
+        return rc;
+
     return soundMap(busId, portId, vendorId, productId, 
-        hidDevice, hidDeviceLen,
         alsaDevice, alsaDeviceLen,
         ossDevice, ossDeviceLen);
 }
+
+/**
+ * This function just parses the query string and calls the search function.
+ */
+int queryHidMap(
+    const char* query,
+    char* hidDevice, unsigned hidDeviceLen) {
+
+    char busId[32];
+    busId[0] = 0;
+    char portId[32];
+    portId[0] = 0;
+    char vendorId[32];
+    vendorId[0] = 0;
+    char productId[32];
+    productId[0] = 0;
+
+    int rc = parseQuery(query, 
+        busId, 32,
+        portId, 32,
+        vendorId, 32,
+        productId, 32);
+    if (rc < 0)
+        return rc;
+
+    return hidMap(busId, portId, vendorId, productId, 
+        hidDevice, hidDeviceLen);
+}
+
 
 
