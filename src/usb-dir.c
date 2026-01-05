@@ -21,7 +21,7 @@
 //
 // TODO: At some point we will create a script that can pull the entire list.
 
-unsigned UsbDirLen = 30;
+unsigned UsbDirLen = 34;
 
 struct NameDirectoryEntry UsbDir[] = {
     { .level=0, .id="0d8c", .name="C-Media Electronics, Inc.", .childCount=25 },
@@ -54,4 +54,8 @@ struct NameDirectoryEntry UsbDir[] = {
         { .level=1, .id="0001", .name="1.1 root hub", .childCount=0 },
         { .level=1, .id="0002", .name="2.0 root hub", .childCount=0 },
         { .level=1, .id="0003", .name="2.0 root hub", .childCount=0 },
+    { .level=0, .id="046d", .name="Logitech, Inc.", .childCount=1 },
+        { .level=1, .id="0ade", .name="Logi Zone 750", .childCount=0 },
+    { .level=0, .id="0951", .name="Kingston Technology", .childCount=1 },
+        { .level=1, .id="176d", .name="XS2000", .childCount=0 },
 };

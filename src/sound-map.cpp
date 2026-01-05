@@ -81,6 +81,7 @@ int visitUSBDevices(std::function<void(const char* vendorId, const char* product
  * @param userData Will be passed back in the callback function.
  */
 int visitUSBDevices2(std::function<void(const char* vendorName, const char* productName, 
+    const char* vendorId, const char* productId,     
     const char* busId, const char* portId)> cb) {
     return visitUSBDevices(
         [cb](const char* vendorId, const char* productId, unsigned busId, unsigned portId) {
@@ -103,14 +104,14 @@ int visitUSBDevices2(std::function<void(const char* vendorName, const char* prod
             snprintf(busIdStr, 8, "%u", busId);
             snprintf(portIdStr, 8, "%u", portId);
 
-            cb(vendorName.c_str(), productName.c_str(), busIdStr, portIdStr);
+            cb(vendorName.c_str(), productName.c_str(), vendorId, productId, busIdStr, portIdStr);
         }   
     );
 }
 
 int soundMap(
     const char* busId, const char* portId, const char* vendorId, const char* productId, 
-    string& alsaDevice, string& ossDevice) {
+    int& alsaCard, string& ossDevice) {
 
     // Check for the case where nothing is specified
     if ((busId == 0 || busId[0] == 0) &&
@@ -185,9 +186,8 @@ int soundMap(
             }
 
             if (alsaCardFound != -1) {
-                char temp[64];
-                snprintf(temp, 64, "%d,%d", alsaCardFound, 0);
-                alsaDevice = temp;
+
+                alsaCard = alsaCardFound;
         
                 // At the moment we are assuming that the ALSA-OSS emulation layer
                 // is numbering the OSS DSP devices in the same order as the ALSA
@@ -195,6 +195,7 @@ int soundMap(
                 //
                 // This can be changed so this function should might need to be 
                 // improved if this case is common.
+                char temp[64];
                 if (alsaCardFound == 0) {
                     snprintf(temp, 64, "/dev/dsp");
                 } else {
@@ -399,7 +400,7 @@ static int parseQuery(const char* query,
 /**
  * This function just parses the query string and calls the search function.
  */
-int querySoundMap(const char* query, string& alsaDevice, string& ossDevice) {
+int querySoundMap(const char* query, int& alsaCard, string& ossDevice) {
 
     string busId, portId, vendorId, productId;
 
@@ -407,7 +408,7 @@ int querySoundMap(const char* query, string& alsaDevice, string& ossDevice) {
     if (rc < 0)
         return rc;
     return soundMap(busId.c_str(), portId.c_str(), vendorId.c_str(), productId.c_str(), 
-        alsaDevice, ossDevice);
+        alsaCard, ossDevice);
 }
 
 /**

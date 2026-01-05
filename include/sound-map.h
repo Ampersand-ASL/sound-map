@@ -36,7 +36,7 @@ namespace kc1fsz {
  * code) or null if any vendor is acceptable.
  * @param matchProductId The product ID of the USB device (a 4 character hex
  * code) or null if any product is acceptable.
- * @param alsaDevice Gets a string of the format "X,0" where X is the card number.
+ * @param alsaCard Gets the card number.
  * @param ossDevice Gets a string of the format /dev/dsp or /dev/dspX where X is the 
  * device number >= 1.
  * @returns 0 on success, -10 if no matching device is found.
@@ -44,7 +44,7 @@ namespace kc1fsz {
 int soundMap(
     const char* matchBusId, const char* matchPortId, 
     const char* matchVendorId, const char* matchProductId, 
-    std::string& alsaDevice, std::string& ossDevice);
+    int& alsaCard, std::string& ossDevice);
 
 /**
  * Looks for the first USB HID device that matches the parameters provided and 
@@ -75,8 +75,7 @@ int hidMap(
  * @returns 0 on success, -10 if no matching device is found, -20 if there 
  * is a format error in the query.
  */
-int querySoundMap(const char* query,
-    std::string& alsaDevice, std::string& ossDevice);
+int querySoundMap(const char* query, int& alsaCard, std::string& ossDevice);
 
 /**
  * Parses a simple query string and calls soundMap().
@@ -85,8 +84,7 @@ int querySoundMap(const char* query,
  * @returns 0 on success, -10 if no matching device is found, -20 if there 
  * is a format error in the query.
  */
-int queryHidMap(const char* query,
-    std::string& hidDevice);
+int queryHidMap(const char* query, std::string& hidDevice);
 
 /**
  * A utility function for getting the hex vendor ID from a human-readable
@@ -120,6 +118,7 @@ int visitUSBDevices(std::function<void(const char* vendorId, const char* product
  * @param userData Will be passed back in the callback function.
  */
 int visitUSBDevices2(std::function<void(const char* vendorName, const char* productName, 
+    const char* vendorId, const char* productId,
     const char* busId, const char* portId)> cb);
 
 }
