@@ -22,6 +22,8 @@
 #include <assert.h>
 #include <ctype.h>
 
+#include <iostream>
+
 #include <libusb-1.0/libusb.h>
 
 #include "sound-map.h"
@@ -155,7 +157,9 @@ int soundMap(
             (vendorId == 0 || vendorId[0] == 0 || strcasecmp(vendorId, vendorId2) == 0) &&
             (productId == 0 || productId[0] == 0 || strcasecmp(productId, productId2) == 0)) {
 
-            found = 1;
+            // Just because we match on the USB IDs doesn't mean we found 
+            // a valid ALSA card. The next step establishes that by checking 
+            // each ALSA card to see if it matches on the bus#/port#.
 
             // ALSA card search
             int alsaCardFound = -1;
@@ -188,7 +192,8 @@ int soundMap(
             if (alsaCardFound != -1) {
 
                 alsaCard = alsaCardFound;
-        
+                found = 1;
+
                 // At the moment we are assuming that the ALSA-OSS emulation layer
                 // is numbering the OSS DSP devices in the same order as the ALSA
                 // cards on the machine.
@@ -214,8 +219,9 @@ int soundMap(
     // 5. Deinitialize libusb
     libusb_exit(ctx);
 
-    if (!found) 
+    if (!found) {
         return -10;
+    }
 
     return 0;
 }
