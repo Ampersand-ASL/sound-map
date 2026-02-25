@@ -24,6 +24,13 @@ namespace kc1fsz {
 
 int visitUSBSerialDevices(std::function<void(const char* dev,unsigned busId, unsigned portId)> cb);
 
+/**
+ * Takes a query in usb bus:xx,port:yy format and returns a device string of the first
+ * matching device (if possible).
+ * @returns 0 If found, -1 if not found.
+ */
+int querySerialDevices(const char* query, std::string& ttyDevice);
+
 }
 
 
