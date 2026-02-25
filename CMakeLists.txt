@@ -65,3 +65,11 @@ target_include_directories(demo-3 PRIVATE src)
 target_include_directories(demo-3 PRIVATE include)
 
 target_link_libraries(demo-3 -lusb-1.0)
+
+add_executable(demo-4
+  src/demos/demo-4.cpp
+  src/serial-map.cpp
+)
+
+target_include_directories(demo-4 PRIVATE src)
+target_include_directories(demo-4 PRIVATE include)

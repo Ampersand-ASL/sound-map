@@ -152,3 +152,26 @@ This is a Raspberry Pi 5:
 If you have the physical arrangement for any other common ASL device please send it a along
 and I'll add it to this page.
 
+Serial Ports
+============
+
+Here's a command that seems to map bus-port numbers to ttyUSBx numbers.
+
+        bruce@pi5:/sys/bus/usb/devices $ ls /sys/bus/usb/devices/*/*/tty*
+        '/sys/bus/usb/devices/1-2:1.0/ttyUSB0/tty':
+        ttyUSB0
+
+        '/sys/bus/usb/devices/1-2/1-2:1.0/ttyUSB0':
+        driver  port_number  power  subsystem  tty  uevent
+
+        '/sys/bus/usb/devices/3-1:1.0/ttyUSB1/tty':
+        ttyUSB1
+
+        '/sys/bus/usb/devices/3-1/3-1:1.0/ttyUSB1':
+        driver  event_char  latency_timer  port_number  power  subsystem  tty  uevent
+
+        '/sys/bus/usb/devices/3-2:1.1/tty/ttyACM0':
+        dev  device  power  subsystem  uevent
+
+        '/sys/bus/usb/devices/3-2/3-2:1.1/tty':
+        ttyACM0    
