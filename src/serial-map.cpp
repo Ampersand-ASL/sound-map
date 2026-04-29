@@ -32,11 +32,11 @@ int querySerialDevices(const char* query, std::string& ttyDevice) {
     bool found = false;
     // Traverse the USB serial devices
     visitUSBSerialDevices(
-        [query, &ttyDevice, &found](const char* dev, unsigned busId, unsigned portId) {
+        [query, &ttyDevice, &found](const char* dev, const char* portPath) {
             if (!found) {
                 // Make the value
                 char value[32];
-                snprintf(value, sizeof(value), "usb bus:%u,port:%u", busId, portId);
+                snprintf(value, sizeof(value), "usb port:%s", portPath);
                 if (strcmp(query, value) == 0) {
                     ttyDevice = dev;
                     found = true;
@@ -47,7 +47,7 @@ int querySerialDevices(const char* query, std::string& ttyDevice) {
     return found ? 0 : -1;
 }
 
-int visitUSBSerialDevices(std::function<void(const char* dev, unsigned busId, unsigned portId)> cb) {
+int visitUSBSerialDevices(std::function<void(const char* dev, const char* portPath)> cb) {
 
     vector<string> interfaces;
 
