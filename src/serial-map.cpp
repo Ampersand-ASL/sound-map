@@ -36,7 +36,7 @@ int querySerialDevices(const char* query, std::string& ttyDevice) {
             if (!found) {
                 // Make the value
                 char value[32];
-                snprintf(value, sizeof(value), "usb port:%s", portPath);
+                snprintf(value, sizeof(value), "port:%s", portPath);
                 if (strcmp(query, value) == 0) {
                     ttyDevice = dev;
                     found = true;

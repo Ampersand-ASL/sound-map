@@ -134,6 +134,13 @@ int serial_0() {
     return 0;
 }    
 
+int serial_1() {
+    string dev;
+    assert(querySerialDevices("port:1-2", dev) == 0);
+    cout << "Query result: " << dev << endl;
+    return 0;
+}
+
 int main(int, const char**) {
     test_1();
     test_2();
@@ -142,4 +149,5 @@ int main(int, const char**) {
     test_5();
     parse_1();
     serial_0();
+    serial_1();
 }
