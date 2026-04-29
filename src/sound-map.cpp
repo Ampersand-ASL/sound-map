@@ -36,8 +36,27 @@ using namespace std;
 
 namespace kc1fsz {
 
+int makePortPath(libusb_device* dev, char* portPath, unsigned portPathCapacity) {
+    // IMPORTANT: Because the path is limited to 7 levels we can be 
+    // safe writing this into a 32-byte buffer.
+    if (portPathCapacity < 32)
+        return -1;
+    uint8_t ports[7];
+    int portsLen = libusb_get_port_numbers(dev, ports, std::size(ports));
+    unsigned p = 0;
+    portPath[p++] = '0' + libusb_get_bus_number(dev);
+    portPath[p++] = '-';
+    for (int k = 0; k < portsLen; k++) {
+        if (k > 0) 
+            portPath[p++] = '.';
+        portPath[p++] = '0' + ports[k];
+    }
+    portPath[p++] = 0;
+    return 0;
+}
+
 int visitUSBDevices(std::function<void(const char* vendorId, const char* productId, 
-    unsigned busId, unsigned portId)> cb) {
+    const char* portPath)> cb) {
 
     libusb_context *ctx = 0;
     if (libusb_init(&ctx) < 0) {
@@ -66,7 +85,12 @@ int visitUSBDevices(std::function<void(const char* vendorId, const char* product
         char productId2[16];
         snprintf(productId2, 16, "%04x", desc.idProduct);
 
-        cb(vendorId2, productId2, libusb_get_bus_number(dev), libusb_get_port_number(dev));
+        // IMPORTANT: Because the path is limited to 7 levels we can be 
+        // safe writing this into a 32-byte buffer.
+        char portPath[32] = { 0 };
+        makePortPath(dev, portPath, sizeof(portPath));
+
+        cb(vendorId2, productId2, portPath);
     }
   
     // The "1" causes an unref
@@ -83,10 +107,9 @@ int visitUSBDevices(std::function<void(const char* vendorId, const char* product
  * @param userData Will be passed back in the callback function.
  */
 int visitUSBDevices2(std::function<void(const char* vendorName, const char* productName, 
-    const char* vendorId, const char* productId,     
-    const char* busId, const char* portId)> cb) {
+    const char* vendorId, const char* productId, const char* portPath)> cb) {
     return visitUSBDevices(
-        [cb](const char* vendorId, const char* productId, unsigned busId, unsigned portId) {
+        [cb](const char* vendorId, const char* productId, const char* portPath) {
 
             string vendorName, productName;
 
@@ -101,23 +124,17 @@ int visitUSBDevices2(std::function<void(const char* vendorName, const char* prod
                 productName += productId;
             }
 
-            char busIdStr[8];
-            char portIdStr[8];
-            snprintf(busIdStr, 8, "%u", busId);
-            snprintf(portIdStr, 8, "%u", portId);
-
-            cb(vendorName.c_str(), productName.c_str(), vendorId, productId, busIdStr, portIdStr);
+            cb(vendorName.c_str(), productName.c_str(), vendorId, productId, portPath);
         }   
     );
 }
 
 int soundMap(
-    const char* busId, const char* portId, const char* vendorId, const char* productId, 
+    const char* portPath, const char* vendorId, const char* productId, 
     int& alsaCard, string& ossDevice) {
 
     // Check for the case where nothing is specified
-    if ((busId == 0 || busId[0] == 0) &&
-        (portId == 0 || portId[0] == 0) &&
+    if ((portPath == 0 || portPath[0] == 0) &&
         (vendorId == 0 || vendorId[0] == 0) &&
         (productId == 0 || productId[0] == 0))
         return -10;
@@ -151,9 +168,12 @@ int soundMap(
         snprintf(vendorId2, 16, "%04x", desc.idVendor);
         char productId2[16];
         snprintf(productId2, 16, "%04x", desc.idProduct);
-        
-        if ((busId == 0 || busId[0] == 0 || libusb_get_bus_number(dev) == atoi(busId)) &&
-            (portId == 0 || portId[0] == 0 || libusb_get_port_number(dev) == atoi(portId)) &&
+        // IMPORTANT: Because the path is limited to 7 levels we can be 
+        // safe writing this into a 32-byte buffer.
+        char portPath2[32] = { 0 };
+        makePortPath(dev, portPath2, sizeof(portPath2));
+      
+        if ((portPath == 0 || portPath[0] == 0 || strcmp(portPath, portPath2) == 0) &&
             (vendorId == 0 || vendorId[0] == 0 || strcasecmp(vendorId, vendorId2) == 0) &&
             (productId == 0 || productId[0] == 0 || strcasecmp(productId, productId2) == 0)) {
 
@@ -226,13 +246,11 @@ int soundMap(
     return 0;
 }
 
-int hidMap(
-    const char* busId, const char* portId, const char* vendorId, const char* productId, 
+int hidMap(const char* portPath, const char* vendorId, const char* productId, 
     string& hidDevice) {
 
     // Check for the case where nothing is specified
-    if ((busId == 0 || busId[0] == 0) &&
-        (portId == 0 || portId[0] == 0) &&
+    if ((portPath == 0 || portPath[0] == 0) &&
         (vendorId == 0 || vendorId[0] == 0) &&
         (productId == 0 || productId[0] == 0))
         return -10;
@@ -266,19 +284,27 @@ int hidMap(
         snprintf(vendorId2, 16, "%04x", desc.idVendor);
         char productId2[16];
         snprintf(productId2, 16, "%04x", desc.idProduct);
-        
-        if ((busId == 0 || busId[0] == 0 || libusb_get_bus_number(dev) == atoi(busId)) &&
-            (portId == 0 || portId[0] == 0 || libusb_get_port_number(dev) == atoi(portId)) &&
+        // IMPORTANT: Because the path is limited to 7 levels we can be 
+        // safe writing this into a 32-byte buffer.
+        char portPath2[32] = { 0 };
+        makePortPath(dev, portPath2, sizeof(portPath2));
+
+        if ((portPath == 0 || portPath[0] == 0 || strcmp(portPath, portPath2) == 0) &&
             (vendorId == 0 || vendorId[0] == 0 || strcasecmp(vendorId, vendorId2) == 0) &&
             (productId == 0 || productId[0] == 0 || strcasecmp(productId, productId2) == 0)) {
 
             found = 1;
 
-            char hidNeedle[32];
-            snprintf(hidNeedle, 32, "/usb%d/%d-%d/", 
+            char hidNeedle[64];
+            snprintf(hidNeedle, sizeof(hidNeedle), "/usb%d/%d-%c/%s/", 
                 libusb_get_bus_number(dev), 
                 libusb_get_bus_number(dev), 
-                libusb_get_port_number(dev));
+                // Top-level port number
+                portPath2[2],
+                // Full path
+                portPath2);
+
+            //cout << "HID NEEDLE " << hidNeedle << endl;
 
             for (unsigned hid = 0; hid < MAX_HID; hid++) {
                 char hidDev[64];
@@ -314,8 +340,8 @@ int hidMap(
 
 // An internal function that converts a query into the parameters needed
 // by the map functions.
-static int parseQuery(const char* query, 
-    string& busId, string& portId, string& vendorId, string& productId) {
+int parseSoundMapQuery(const char* query, 
+    string& portPath, string& vendorId, string& productId) {
 
     string vendorName;
 
@@ -348,10 +374,8 @@ static int parseQuery(const char* query,
         }
         else {
             if (query[i] == ',' || query[i] == 0) {
-                if (strcmp(name, "bus") == 0) 
-                    busId = value;
-                else if (strcmp(name, "port") == 0) 
-                    portId = value;
+                if (strcmp(name, "port") == 0) 
+                    portPath = value;
                 else if (strcmp(name, "vendor") == 0) 
                     vendorId = value;
                 else if (strcmp(name, "product") == 0) 
@@ -408,12 +432,12 @@ static int parseQuery(const char* query,
  */
 int querySoundMap(const char* query, int& alsaCard, string& ossDevice) {
 
-    string busId, portId, vendorId, productId;
+    string portPath, vendorId, productId;
 
-    int rc = parseQuery(query, busId, portId, vendorId, productId);
+    int rc = parseSoundMapQuery(query, portPath, vendorId, productId);
     if (rc < 0)
         return rc;
-    return soundMap(busId.c_str(), portId.c_str(), vendorId.c_str(), productId.c_str(), 
+    return soundMap(portPath.c_str(), vendorId.c_str(), productId.c_str(), 
         alsaCard, ossDevice);
 }
 
@@ -422,13 +446,12 @@ int querySoundMap(const char* query, int& alsaCard, string& ossDevice) {
  */
 int queryHidMap(const char* query, string& hidDevice) {
 
-    string busId, portId, vendorId, productId;
+    string portPath, vendorId, productId;
 
-    int rc = parseQuery(query, busId, portId, vendorId, productId);
+    int rc = parseSoundMapQuery(query, portPath, vendorId, productId);
     if (rc < 0)
         return rc;
-    return hidMap(busId.c_str(), portId.c_str(), vendorId.c_str(), productId.c_str(), 
-        hidDevice);
+    return hidMap(portPath.c_str(), vendorId.c_str(), productId.c_str(), hidDevice);
 }
 
 }

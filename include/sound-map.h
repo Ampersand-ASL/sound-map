@@ -28,9 +28,7 @@ namespace kc1fsz {
  * since these devices have a way of changing order during reboots or reconfigurations
  * so be specific as possible. Specification of physical bus/port number is ideal.
  * 
- * @param matchBusId The physical USB bus ID (a number) or null if any bus 
- * is acceptable.
- * @param matchPortId The physical USB port ID (a number) of null if any 
+ * @param matchPortPath The physical USB port path or null if any 
  * port is acceptable.
  * @param matchVendorId The vendor ID of the USB device (a 4 character hex
  * code) or null if any vendor is acceptable.
@@ -42,8 +40,7 @@ namespace kc1fsz {
  * @returns 0 on success, -10 if no matching device is found.
  */
 int soundMap(
-    const char* matchBusId, const char* matchPortId, 
-    const char* matchVendorId, const char* matchProductId, 
+    const char* matchPortPath, const char* matchVendorId, const char* matchProductId, 
     int& alsaCard, std::string& ossDevice);
 
 /**
@@ -52,9 +49,7 @@ int soundMap(
  * since these devices have a way of changing order during reboots or reconfigurations
  * so be specific as possible. Specification of physical bus/port number is ideal.
  * 
- * @param matchBusId The physical USB bus ID (a number) or null if any bus 
- * is acceptable.
- * @param matchPortId The physical USB port ID (a number) of null if any 
+ * @param matchPortPath The physical USB port path or null if any 
  * port is acceptable.
  * @param matchVendorId The vendor ID of the USB device (a 4 character hex
  * code) or null if any vendor is acceptable.
@@ -64,14 +59,16 @@ int soundMap(
  * @returns 0 on success, -10 if no matching device is found.
  */
 int hidMap(
-    const char* matchBusId, const char* matchPortId, 
-    const char* matchVendorId, const char* matchProductId, 
+    const char* matchPortPath, const char* matchVendorId, const char* matchProductId, 
     std::string& hidDevice);
+
+int parseSoundMapQuery(const char* query, 
+    std::string& portPath, std::string& vendorId, std::string& productId);
 
 /**
  * Parses a simple query string and calls soundMap().
  *  
- * @param query Is of the format: "bus:aaa,port:bbb,vendor:ccc,product:ddd,vendorname:nnnn"
+ * @param query Is of the format: "port:ppppppp,vendor:ccc,product:ddd,vendorname:nnnn"
  * @returns 0 on success, -10 if no matching device is found, -20 if there 
  * is a format error in the query.
  */
@@ -80,7 +77,7 @@ int querySoundMap(const char* query, int& alsaCard, std::string& ossDevice);
 /**
  * Parses a simple query string and calls soundMap().
  *  
- * @param query Is of the format: "bus:aaa,port:bbb,vendor:ccc,product:ddd,vendorname:nnnn"
+ * @param query Is of the format: "port:pppppp,vendor:ccc,product:ddd,vendorname:nnnn"
  * @returns 0 on success, -10 if no matching device is found, -20 if there 
  * is a format error in the query.
  */
@@ -111,14 +108,12 @@ int getVendorAndProductName(const char* targetVendorId, const char* targetProduc
  * @param userData Will be passed back in the callback function.
  */
 int visitUSBDevices(std::function<void(const char* vendorId, const char* productId, 
-    unsigned busId, unsigned portId)> cb);
+    const char* portPath)> cb);
 
 /**
  * Iterates across all USB devices and calls the callback for each one.
- * @param userData Will be passed back in the callback function.
  */
 int visitUSBDevices2(std::function<void(const char* vendorName, const char* productName, 
-    const char* vendorId, const char* productId,
-    const char* busId, const char* portId)> cb);
+    const char* vendorId, const char* productId, const char* portPath)> cb);
 
 }
