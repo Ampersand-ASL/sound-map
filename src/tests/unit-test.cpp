@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include "sound-map.h"
+#include "serial-map.h"
 
 using namespace std;
 using namespace kc1fsz;
@@ -121,6 +122,18 @@ int parse_1() {
     return 0;
 }
 
+int serial_0() {
+    cout << endl << "Serial devices:" << endl;
+    int rc = visitUSBSerialDevices(
+        [](const char* dev, const char* portPath) {
+            cout << "dev          " << dev << endl;
+            cout << "portPath     " << portPath << endl;
+        }
+    );
+    assert(rc == 0);
+    return 0;
+}    
+
 int main(int, const char**) {
     test_1();
     test_2();
@@ -128,4 +141,5 @@ int main(int, const char**) {
     test_4();
     test_5();
     parse_1();
+    serial_0();
 }

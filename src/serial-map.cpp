@@ -61,7 +61,7 @@ int visitUSBSerialDevices(std::function<void(const char* dev, const char* portPa
             // Skip the special entries for current ('.') and parent ('..') directories
             if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0) 
                 continue;
-            // Look for the interfaces
+            // Look for the interfaces (bus-port.port.port:i.i)
             if (strchr(dir->d_name, ':') != 0)
                 interfaces.push_back(string(dir->d_name));
         }
@@ -84,17 +84,14 @@ int visitUSBSerialDevices(std::function<void(const char* dev, const char* portPa
                 if (dn.starts_with("ttyUSB")) {
                     string dev = "/dev/";
                     dev += dn;
-                    // Parse the bus/port
+                    // Parse the port path
                     int state = 0;
                     char acc[16];
                     unsigned accPtr = 0;
-                    unsigned bus = 0, port = 0;
                     for (unsigned i = 0; i < interface.length(); i++) {
                         if (state == 0) {
-                            if (interface[i] == '-') {
+                            if (interface[i] == ':') {
                                 acc[accPtr] = 0;
-                                accPtr = 0;
-                                bus = atoi(acc);
                                 state = 1;
                             }
                             else {
@@ -103,21 +100,8 @@ int visitUSBSerialDevices(std::function<void(const char* dev, const char* portPa
                                     accPtr++;
                             }
                         }
-                        else if (state == 1) {
-                            if (interface[i] == ':') {
-                                acc[accPtr] = 0;
-                                accPtr = 0;
-                                port = atoi(acc);
-                                state = 2;
-                            }
-                            else {
-                                acc[accPtr] = interface[i];
-                                if (accPtr < sizeof(acc) - 1)
-                                    accPtr++;
-                            }
-                        }                       
                     }
-                    cb(dev.c_str(), bus, port);
+                    cb(dev.c_str(), acc);
                 }
             }
             // Close the directory stream

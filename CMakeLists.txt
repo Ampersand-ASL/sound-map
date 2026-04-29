@@ -24,6 +24,7 @@ add_executable(unit-test
   src/tests/unit-test.cpp
   src/sound-map.cpp
   src/sound-map-2.cpp
+  src/serial-map.cpp
   src/usb-dir.c
 )
 
