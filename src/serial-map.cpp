@@ -28,23 +28,28 @@ using namespace std;
 
 namespace kc1fsz {
 
-int querySerialDevices(const char* query, std::string& ttyDevice) {
-    bool found = false;
+int resolveUSBSerialDevice(const char* portPath, std::string& ttyDevice) {
+
+    bool pathFound = false;
+
     // Traverse the USB serial devices
-    visitUSBSerialDevices(
-        [query, &ttyDevice, &found](const char* dev, const char* portPath) {
-            if (!found) {
-                // Make the value
-                char value[32];
-                snprintf(value, sizeof(value), "port:%s", portPath);
-                if (strcmp(query, value) == 0) {
+    int rc = visitUSBSerialDevices(
+        [portPath, &ttyDevice, &pathFound](const char* dev, const char* portPath2) {
+            if (!pathFound) {
+                if (strcmp(portPath, portPath2) == 0) {
                     ttyDevice = dev;
-                    found = true;
+                    pathFound = true;
                 }
             }
         }
     );
-    return found ? 0 : -1;
+
+    if (rc < 0)
+        return -1;
+    else if (!pathFound)
+        return -2;
+    else 
+        return 0;
 }
 
 int visitUSBSerialDevices(std::function<void(const char* dev, const char* portPath)> cb) {

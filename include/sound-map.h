@@ -23,65 +23,29 @@
 namespace kc1fsz {
 
 /**
- * Looks for the first USB sound device that matches the parameters provided and 
- * returns the ALSA, and OSS device names that correspond. Use caution
- * since these devices have a way of changing order during reboots or reconfigurations
- * so be specific as possible. Specification of physical bus/port number is ideal.
+ * Takes the path of a physical USB device and produces the ALSA/OSS device identifies.
+ * This is tricky because the mapping depends on the USB enumeration process which
+ * can change depending on conditions.
  * 
- * @param matchPortPath The physical USB port path or null if any 
- * port is acceptable.
- * @param matchVendorId The vendor ID of the USB device (a 4 character hex
- * code) or null if any vendor is acceptable.
- * @param matchProductId The product ID of the USB device (a 4 character hex
- * code) or null if any product is acceptable.
+ * @param matchPortPath The physical USB port path
  * @param alsaCard Gets the card number.
  * @param ossDevice Gets a string of the format /dev/dsp or /dev/dspX where X is the 
  * device number >= 1.
  * @returns 0 on success, -10 if no matching device is found.
  */
-int soundMap(
-    const char* matchPortPath, const char* matchVendorId, const char* matchProductId, 
-    int& alsaCard, std::string& ossDevice);
+int resolveUSBSoundDevice(const char* matchPortPath, int& alsaCard, std::string& ossDevice);
 
 /**
- * Looks for the first USB HID device that matches the parameters provided and 
- * returns the HID device names that correspond. Use caution
- * since these devices have a way of changing order during reboots or reconfigurations
- * so be specific as possible. Specification of physical bus/port number is ideal.
- * 
+ * Takes the path of a physical USB device and produces the HID device identifies.
+ * This is tricky because the mapping depends on the USB enumeration process which
+ * can change depending on conditions.
+* 
  * @param matchPortPath The physical USB port path or null if any 
  * port is acceptable.
- * @param matchVendorId The vendor ID of the USB device (a 4 character hex
- * code) or null if any vendor is acceptable.
- * @param matchProductId The product ID of the USB device (a 4 character hex
- * code) or null if any product is acceptable.
  * @param hidDevice Gets a string of the format "/dev/hidrawX" where X is and integer.
  * @returns 0 on success, -10 if no matching device is found.
  */
-int hidMap(
-    const char* matchPortPath, const char* matchVendorId, const char* matchProductId, 
-    std::string& hidDevice);
-
-int parseSoundMapQuery(const char* query, 
-    std::string& portPath, std::string& vendorId, std::string& productId);
-
-/**
- * Parses a simple query string and calls soundMap().
- *  
- * @param query Is of the format: "port:ppppppp,vendor:ccc,product:ddd,vendorname:nnnn"
- * @returns 0 on success, -10 if no matching device is found, -20 if there 
- * is a format error in the query.
- */
-int querySoundMap(const char* query, int& alsaCard, std::string& ossDevice);
-
-/**
- * Parses a simple query string and calls soundMap().
- *  
- * @param query Is of the format: "port:pppppp,vendor:ccc,product:ddd,vendorname:nnnn"
- * @returns 0 on success, -10 if no matching device is found, -20 if there 
- * is a format error in the query.
- */
-int queryHidMap(const char* query, std::string& hidDevice);
+int resolveUSBHIDDevice(const char* matchPortPath, std::string& hidDevice);
 
 /**
  * A utility function for getting the hex vendor ID from a human-readable
@@ -108,12 +72,13 @@ int getVendorAndProductName(const char* targetVendorId, const char* targetProduc
  * @param userData Will be passed back in the callback function.
  */
 int visitUSBDevices(std::function<void(const char* vendorId, const char* productId, 
-    const char* portPath)> cb);
+    const char* portPath, int usbBus, int usbDevice)> cb);
 
 /**
  * Iterates across all USB devices and calls the callback for each one.
  */
 int visitUSBDevices2(std::function<void(const char* vendorName, const char* productName, 
-    const char* vendorId, const char* productId, const char* portPath)> cb);
-
+    const char* vendorId, const char* productId, const char* portPath,
+    int usbBus, int usbDevice)> cb);
+    
 }

@@ -13,7 +13,7 @@ int test_1() {
     int alsaDev;
     string ossDev;
 
-    int rc = soundMap("1-3.2", 0, 0, alsaDev, ossDev);
+    int rc = resolveUSBSoundDevice("3-2.2", alsaDev, ossDev);
     if (rc < 0) {
         cout << "ERROR: " << rc << endl;
         return -1;
@@ -25,7 +25,7 @@ int test_1() {
 
     string hidDev;
 
-    rc = hidMap("1-3.2", 0, 0, hidDev);
+    rc = resolveUSBHIDDevice("1-3.2", hidDev);
     if (rc < 0) {
         cout << "ERROR: " << rc << endl;
         return -1;
@@ -41,7 +41,7 @@ int test_2() {
     
     int alsaDev;
     string ossDev;
-    int rc = querySoundMap("port:1-3.2", alsaDev, ossDev);
+    int rc = resolveUSBSoundDevice("1-3.2", alsaDev, ossDev);
     if (rc < 0) {
         cout << "ERROR: " << rc << endl;
         return -1;
@@ -52,39 +52,7 @@ int test_2() {
     cout << "OSS   : " << ossDev << endl;
 
     string hidDev;
-    rc = queryHidMap("port:1-3.2", hidDev);
-    if (rc < 0) {
-        cout << "ERROR: " << rc << endl;
-        return -1;
-    }
-
-    cout << "Found" << endl;
-    cout << "HID   : " << hidDev << endl;
-
-    return 0;
-}
-
-int test_3() {
-    
-    int alsaDev;
-    string ossDev;
-    int rc = querySoundMap("port:1-3.2,vendor:0d8C", alsaDev, ossDev);
-    if (rc < 0) {
-        cout << "ERROR: " << rc << endl;
-        return -1;
-    }
-
-    cout << "Found" << endl;
-    cout << "ALSA  : " << alsaDev << endl;
-    cout << "OSS   : " << ossDev << endl;
-
-    return 0;
-}
-
-int test_4() {
-    
-    string hidDev;
-    int rc = queryHidMap("vendorname:\"C-Media Electronics, Inc.\"", hidDev);
+    rc = resolveUSBHIDDevice("1-3.2", hidDev);
     if (rc < 0) {
         cout << "ERROR: " << rc << endl;
         return -1;
@@ -100,27 +68,19 @@ int test_5() {
     int rc = visitUSBDevices2(
         [](const char* vendorName, const char* productName, 
            const char* vendorId, const char* productId, 
-           const char* portPath) {
+           const char* portPath, int usbBus, int usbDevice) {
             cout << "vendorName   " << vendorName << endl;
             cout << "productName  " << productName << endl;
             cout << "vendorId     " << vendorId << endl;
             cout << "productId    " << productId << endl;
             cout << "portPath     " << portPath << endl;
+            cout << "bus          " << usbBus << endl;
+            cout << "device       " << usbDevice << endl;
         }
     );
     assert(rc == 0);
     return 0;
 }    
-
-int parse_1() {
-    string portPath, vendorId, productId;
-    int rc = parseSoundMapQuery("port:1-1,vendor:ccc,product:ddd", 
-        portPath, vendorId, productId);
-    assert(rc == 0);
-    assert(portPath == "1-1");
-    assert(productId == "ddd");
-    return 0;
-}
 
 int serial_0() {
     cout << endl << "Serial devices:" << endl;
@@ -136,7 +96,7 @@ int serial_0() {
 
 int serial_1() {
     string dev;
-    assert(querySerialDevices("port:1-2", dev) == 0);
+    assert(resolveUSBSerialDevice("1-2", dev) == 0);
     cout << "Query result: " << dev << endl;
     return 0;
 }
@@ -144,10 +104,7 @@ int serial_1() {
 int main(int, const char**) {
     test_1();
     test_2();
-    test_3();
-    test_4();
     test_5();
-    parse_1();
     serial_0();
     serial_1();
 }

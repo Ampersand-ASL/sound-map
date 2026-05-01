@@ -28,10 +28,10 @@ namespace kc1fsz {
 int visitUSBSerialDevices(std::function<void(const char* dev, const char* portPath)> cb);
 
 /**
- * Takes a query in usb port:pppp format and returns a device string of the first
- * matching device (if possible).
+ * Takes a USB port path and returns a device string of the matching USB device (if possible).
+ *
  * @returns 0 If found, -1 if not found.
  */
-int querySerialDevices(const char* query, std::string& ttyDevice);
+int resolveUSBSerialDevice(const char* matchPortPath, std::string& ttyDevice);
 
 }
