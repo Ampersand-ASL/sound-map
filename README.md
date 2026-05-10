@@ -134,6 +134,12 @@ I ran this with my [AllScan URI101 USB sound device](https://allscan.info/produc
      ALSA  : 3,0
      OSS   : /dev/dsp3
 
+Notes on AllScan Devices
+========================
+
+* [UCI90](https://allscan.info/images/UCI90/UCI90-v1.1-sch.jpg) - CM108B connected directly to USB port. 
+* [UCI80](https://allscan.info/images/UCI80/UCI80-v1.0-sch.jpg) - CM108B connected to CH334 USB hub, plus CH343 serial device that enumerates as an ACM device (CDC Data, Driver=cdc_acm).
+
 Physical Port Reference
 =======================
 

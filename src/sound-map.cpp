@@ -235,13 +235,19 @@ int resolveUSBHIDDevice(const char* portPath, string& hidDevice) {
 
                     pathFound = true;
 
+                    // This example was provided by Patrick N2DYI based on a Pi3A+ with a UCI120.
+                    // In this case the Pi has single USB port and the UCI120 has no internal hub so
+                    // the audio/hid device is at the first port level.
+                    // hidraw0 -> ../../devices/platform/soc/3f980000.usb/usb1/1-1/1-1:1.3/0003:0D8C:0012.0002/hidraw/hidraw0
+                    //
+                    // This example was provided by Patrick N2DYI based on a Pi3A+ with a UCI80.
+                    // In this case the Pi has single USB port and the UCI80 has an internal USB hub
+                    // chip. So the device is one layer down:
+                    //
+                    // hidraw0 -> ../../devices/platform/soc/3f980000.usb/usb1/1-1/1-1.2/1-1.2:1.3/0003:0D8C:0012.0001/hidraw/hidraw0               
+
                     char hidNeedle[64];
-                    snprintf(hidNeedle, sizeof(hidNeedle), "/usb%d/%d-%c/%s/", 
-                        usbBus2, usbBus2,
-                        // Top-level port number
-                        portPath2[2],
-                        // Full path
-                        portPath2);
+                    snprintf(hidNeedle, sizeof(hidNeedle), "/%s:", portPath2);
 
                     for (unsigned hid = 0; hid < MAX_HID; hid++) {
                         char hidDev[64];
@@ -250,6 +256,7 @@ int resolveUSBHIDDevice(const char* portPath, string& hidDevice) {
                         ssize_t len = readlink(hidDev, hidLinkTarget, sizeof(hidLinkTarget) - 1);
                         if (len != -1) {
                             hidLinkTarget[len] = '\0';
+                            // Was the needle found? 
                             if (strstr(hidLinkTarget, hidNeedle) != 0) {
                                 char temp[64];
                                 snprintf(temp, 64, "/dev/hidraw%d", hid);
