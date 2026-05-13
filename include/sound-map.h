@@ -22,6 +22,8 @@
 
 namespace kc1fsz {
 
+class Log;
+
 /**
  * Takes the path of a physical USB device and produces the ALSA/OSS device identifies.
  * This is tricky because the mapping depends on the USB enumeration process which
@@ -45,7 +47,7 @@ int resolveUSBSoundDevice(const char* matchPortPath, int& alsaCard, std::string&
  * @param hidDevice Gets a string of the format "/dev/hidrawX" where X is and integer.
  * @returns 0 on success, -10 if no matching device is found.
  */
-int resolveUSBHIDDevice(const char* matchPortPath, std::string& hidDevice);
+int resolveUSBHIDDevice(Log& log, const char* matchPortPath, std::string& hidDevice);
 
 /**
  * A utility function for getting the hex vendor ID from a human-readable

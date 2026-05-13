@@ -26,6 +26,8 @@
 
 #include <libusb-1.0/libusb.h>
 
+#include "kc1fsz-tools/Log.h"
+
 #include "sound-map.h"
 #include "usb-dir.h"
 
@@ -217,7 +219,7 @@ int resolveUSBSoundDevice(const char* portPath, int& alsaCard, string& ossDevice
         return 0;
 }
 
-int resolveUSBHIDDevice(const char* portPath, string& hidDevice) {
+int resolveUSBHIDDevice(Log& log, const char* portPath, string& hidDevice) {
 
     // Check for the case where nothing is specified
     if ((portPath == 0 || portPath[0] == 0))
@@ -228,7 +230,7 @@ int resolveUSBHIDDevice(const char* portPath, string& hidDevice) {
     bool pathFound = false;
     bool deviceFound = false;
 
-    int rc = visitUSBDevices([portPath, &pathFound, &deviceFound, &hidDevice]
+    int rc = visitUSBDevices([portPath, &pathFound, &deviceFound, &hidDevice, &log]
         (const char*, const char*, const char* portPath2, int usbBus2, int usbDevice2) {
             if (!pathFound) {
                 if (strcmp(portPath, portPath2) == 0) {
@@ -248,14 +250,22 @@ int resolveUSBHIDDevice(const char* portPath, string& hidDevice) {
 
                     char hidNeedle[64];
                     snprintf(hidNeedle, sizeof(hidNeedle), "/%s:", portPath2);
+                    log.info("Looking for [%s]", hidNeedle);
 
                     for (unsigned hid = 0; hid < MAX_HID; hid++) {
+
                         char hidDev[64];
                         snprintf(hidDev, 64, "/sys/class/hidraw/hidraw%d", hid);
+                        log.info("Checking [%s]", hidDev);
+
                         char hidLinkTarget[1024];
                         ssize_t len = readlink(hidDev, hidLinkTarget, sizeof(hidLinkTarget) - 1);
                         if (len != -1) {
                             hidLinkTarget[len] = '\0';
+
+                            log.infoDump("Potential target", 
+                                (const uint8_t*)hidLinkTarget, strlen(hidLinkTarget));
+
                             // Was the needle found? 
                             if (strstr(hidLinkTarget, hidNeedle) != 0) {
                                 char temp[64];
