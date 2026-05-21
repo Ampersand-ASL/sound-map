@@ -263,9 +263,6 @@ int resolveUSBHIDDevice(Log& log, const char* portPath, string& hidDevice) {
                         if (len != -1) {
                             hidLinkTarget[len] = '\0';
 
-                            log.infoDump("Potential target", 
-                                (const uint8_t*)hidLinkTarget, strlen(hidLinkTarget));
-
                             // Was the needle found? 
                             if (strstr(hidLinkTarget, hidNeedle) != 0) {
                                 char temp[64];
