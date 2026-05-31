@@ -22,6 +22,8 @@
 #include <vector>
 #include <string>
 
+#include "kc1fsz-tools/linux/FileUtils.h"
+
 #include "serial-map.h"
 
 using namespace std;
@@ -68,23 +70,6 @@ static void parsePort(const string& interface, char* acc, unsigned capacity) {
                     accPtr++;
             }
         }
-    }
-}
-
-static void visitDir(const string& base, std::function<void(const string& name)> cb) {
-    DIR *d;
-    struct dirent *dir;
-    d = opendir(base.c_str());
-    if (d) {
-        // Read each entry in the directory
-        while ((dir = readdir(d)) != NULL) {
-            // Skip the special entries for current ('.') and parent ('..') directories
-            if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0) 
-                continue;
-            cb(string(dir->d_name));
-        }
-        // Close the directory stream
-        closedir(d);
     }
 }
 
